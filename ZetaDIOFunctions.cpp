@@ -18,27 +18,29 @@
 // ZetaDIOFunctions.c  v8.3.0
 // Desc: Writes and reads from Digital I/O port
 //============================================================================
+#include <iostream>
 #include "DSCUD_demo_def.h"
 #include "Zeta.h"
-#define DIOPORT_MAX 4
+
+using namespace std;
+
+constexpr uint8_t DIOPORT_MAX {4};
 //DIO Port No
-#define DIOPORT_A 0
-#define DIOPORT_B 1
-#define DIOPORT_C 2
-#define DIOPORT_D 3
+constexpr uint8_t DIOPORT_A {0};
+constexpr uint8_t DIOPORT_B {1};
+constexpr uint8_t DIOPORT_C {2};
+constexpr uint8_t DIOPORT_D {3};
 
 
 
-#define READ_BYTE				           1
-#define READ_BYTE_FROM_ALL_PORTS	   	   2
-#define READ_ALL_BITS				       3
-#define WRITE_BYTE				           4
-#define WRITE_BIT				           5
-#define LOOP_BACK_TEST				       6
+constexpr uint8_t  READ_BYTE				           {1};
+constexpr uint8_t  READ_BYTE_FROM_ALL_PORTS	   	   	   {2};
+constexpr uint8_t  READ_ALL_BITS				       {3};
+constexpr uint8_t  WRITE_BYTE				           {4};
+constexpr uint8_t  WRITE_BIT				           {5};
+constexpr uint8_t  LOOP_BACK_TEST				       {6};
 
 
-// globals
-ERRPARAMS errorParams; // structure for returning error code and error string
 // var declarations
 DSCB dscb = 0; // handle used to refer to the board
 DSCCBP dsccbp; // structure containing board settings
@@ -55,6 +57,34 @@ void readAllBitsDIOPort();
 void writeByteDIOPort();
 void writeBitDIOPort();
 void DIOPortLoopbackTest();
+
+class errorCheck
+{
+	private:
+		// globals
+		ERRPARAMS errorParams; // structure for returning error code and error string
+	public:
+		errorCheck()
+		{
+			dscGetLastError ( &errorParams );
+			printf ( "dscInit error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+			cout<< "dscInit error: "<< dscGetErrorString ( errorParams.ErrCode ) << errorParams.errstring << endl;
+		}
+};
+
+
+class bit
+{
+
+};
+
+class byte
+{
+	public:
+
+
+};
+
 //=============================================================================
 // Name: main()
 // Desc: Starting function that calls the driver functions used
@@ -92,8 +122,7 @@ int main ( void )
 
 	if ( (dscInit ( DSC_VERSION ) != DE_NONE) )
 	{
-		dscGetLastError ( &errorParams );
-		printf ( "dscInit error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+		errorCheck ErrorCheck();
 		return 0;
 	}
 		
@@ -110,11 +139,12 @@ int main ( void )
 	//		  the struct, dscb, now holds the handle for the board
 	//=========================================================================
 
-    printf ( "\nZeta DIO Function Application\n" );
+    cout<< "\nZeta DIO Function Application\n";
 	 
 	dsccb.boardtype = DSC_ZETA;
 	
-	printf ( "Enter the PC/104 base address (Default 0x%X hit ENTER) : ",0x200 );
+	cout<< "Enter the PC/104 base address (Default 0x200 hit ENTER) : ";
+	
 	fgets ( input_buffer, 20, stdin );
 	if ( input_buffer[0] == '\n' )
 	{
@@ -140,8 +170,7 @@ int main ( void )
 
 	if(dscInitBoard(DSC_ZETA, &dsccb, &dscb)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		fprintf( stderr, "dscInitBoard error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );
+		errorCheck ErrorCheck();
 		return 0;
 	}
 
@@ -271,8 +300,7 @@ void readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -281,8 +309,7 @@ void readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -291,8 +318,7 @@ void readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -301,8 +327,7 @@ void readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -318,8 +343,7 @@ void readByteDIOPort()
 
 		if( (dscDIOInputByte ( dscb, port, &input_byte ) != DE_NONE) )
 		{
-			dscGetLastError ( &errorParams );
-			printf (  "dscDIOInputByte() error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+			errorCheck ErrorCheck();
 			return;
 		}
 
@@ -360,8 +384,7 @@ void readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -370,8 +393,7 @@ void readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -380,8 +402,7 @@ void readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -390,8 +411,7 @@ void readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -405,8 +425,7 @@ void readByteAllDIOPorts()
 		{
 			if( (dscDIOInputByte ( dscb, port, &input_byte ) != DE_NONE) )
 			{
-				dscGetLastError ( &errorParams );
-				printf (  "dscDIOInputByte() error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+				errorCheck ErrorCheck();
 				return;
 			}
 			printf("0x%X\t",input_byte);
@@ -446,8 +465,7 @@ void  readAllBitsDIOPort()
 	
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();	
 		return ;
 	}
 
@@ -456,8 +474,7 @@ void  readAllBitsDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -466,8 +483,7 @@ void  readAllBitsDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -476,8 +492,7 @@ void  readAllBitsDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 
@@ -515,9 +530,7 @@ void  readAllBitsDIOPort()
 
 			if ( (dscDIOInputBit ( dscb, port, bit, &input_byte ) != DE_NONE) )
 			{
-				dscGetLastError ( &errorParams );
-				printf("dscDIOInputBit () error: %s %s\n",
-					  dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+				errorCheck ErrorCheck();
 				return;
 			}
 
@@ -583,8 +596,7 @@ void writeByteDIOPort()
 	
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 	//HelixRead(0x29,&output_byte);
@@ -608,9 +620,7 @@ void writeByteDIOPort()
 			
 			if ( (dscDIOOutputByte(dscb,port,output_byte) != DE_NONE) )
 			{
-				dscGetLastError ( &errorParams );
-				printf("dscDIOOutputByte () error: %s %s\n",
-					  dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+				errorCheck ErrorCheck();
 				return;
 			}
 			printf("The Byte value  %d is sent to port %d \n",output_byte,port);
@@ -672,8 +682,7 @@ void writeBitDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		dscGetLastError(&errorParams);
-		printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+		errorCheck ErrorCheck();
 		return ;
 	}
 	do
@@ -696,9 +705,7 @@ void writeBitDIOPort()
 
 			if ( (dscDIOOutputBit(dscb,port,bit,output_byte) != DE_NONE) )
 			{
-				dscGetLastError ( &errorParams );
-				printf("dscDIOOutputBit () error: %s %s\n",
-					  dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+				errorCheck ErrorCheck();
 				return;
 			}
 		}
@@ -743,8 +750,7 @@ void DIOPortLoopbackTest()
 
 		if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 		{
-			dscGetLastError(&errorParams);
-			printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+			errorCheck ErrorCheck();
 			return ;
 		}
 
@@ -779,8 +785,7 @@ void DIOPortLoopbackTest()
 
 		if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 		{
-			dscGetLastError(&errorParams);
-			printf("dscDIOSetConfig error: %s %s\n", dscGetErrorString(errorParams.ErrCode), errorParams.errstring );	
+			errorCheck ErrorCheck();
 			return ;
 		}
 			
@@ -799,16 +804,14 @@ void DIOPortLoopbackTest()
 			
 			if( (dscDIOOutputByte( dscb, output_port, output_byte ) != DE_NONE) )
 			{
-				dscGetLastError ( &errorParams );
-				printf (  "dscDIOOutputByte() error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+				errorCheck ErrorCheck();
 				return;
 			}
 			
 			if( (dscDIOInputByte ( dscb, input_port, &input_byte ) != DE_NONE) )
 			{
-					dscGetLastError ( &errorParams );
-					printf (   "dscDIOInputByte() error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
-					return;
+				errorCheck ErrorCheck();
+				return;
 			}
 
 			 

@@ -12,7 +12,7 @@ INC =-I ../Common/
 all: $(APPName).o
 
 $(APPName).o:
-	gcc -o $(APPName) $(APPName).c $(INC) $(LIB)
+	g++ -o $(APPName) $(APPName).cpp $(INC) $(LIB)
 	cp $(APPName) ./Executables
 
 clean:
