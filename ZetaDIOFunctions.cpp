@@ -47,16 +47,6 @@ DSCCBP dsccbp; // structure containing board settings
 int portConfig[4];//used to store the port directions
 DSCCB dsccb;
 
-//new variables
-
-char input_buffer[20];
-
-void readByteDIOPort();
-void readByteAllDIOPorts();
-void readAllBitsDIOPort();
-void writeByteDIOPort();
-void writeBitDIOPort();
-void DIOPortLoopbackTest();
 
 class errorCheck
 {
@@ -72,219 +62,32 @@ class errorCheck
 		}
 };
 
-
-class bit
-{
-
-};
-
 class byte
 {
 	public:
-
+		byte();
+		void readByteDIOPort();
+		void readByteAllDIOPorts();
+		void readAllBitsDIOPort();
+		void writeByteDIOPort();
+		void writeBitDIOPort();
+		void DIOPortLoopbackTest();
+	private:
+		//new variables
+		char input_buffer[20];
 
 };
-
-//=============================================================================
-// Name: main()
-// Desc: Starting function that calls the driver functions used
-//
-//		 NOTE: By convention, you should capture the BYTE return value for each
-//		 driver API call, and check the error code.
-//
-//	     I. Driver Initialization
-//	    II. Board Initialization
-//	   III. DIO INPUT AND OUTPUT
-//	    IV. Cleanup
-//
-//=============================================================================
-
-int main ( void )
+byte::byte()
 {
 
-	int intBuff = 0; // temp variables of size int
-	int temp = 0;   // temporary storage
-   	char input_buffer[20];
-
-   	memset ( &dsccbp, 0, sizeof(DSCCBP) );
-	memset (portConfig,0, sizeof(int)*DIOPORT_MAX);
-
-  
-	//=========================================================================
-	// I. DRIVER INITIALIZATION
-	//
-	//    Initializes the DSCUD library.
-	//
-	//    STEPS TO FOLLOW:
-	//
-	//	  1. initialize the driver, using the driver version for validation
-	//=========================================================================
-
-	if ( (dscInit ( DSC_VERSION ) != DE_NONE) )
-	{
-		errorCheck ErrorCheck();
-		return 0;
-	}
-		
-	//=========================================================================
-	// II. BOARD INITIALIZATION
-	//
-	//	   Initialize the port_under_testboard. This function passes the various
-	//	   hardware parameters to the driver and resets the hardware.
-	//
-	//     STEPS TO FOLLOW:
-	//
-	//	   1. set the board type to DSC_ZETA for the ZETA board
-	//	   2. intialize and register the board with the driver, after which
-	//		  the struct, dscb, now holds the handle for the board
-	//=========================================================================
-
-    cout<< "\nZeta DIO Function Application\n";
-	 
-	dsccb.boardtype = DSC_ZETA;
-	
-	cout<< "Enter the PC/104 base address (Default 0x200 hit ENTER) : ";
-	
-	fgets ( input_buffer, 20, stdin );
-	if ( input_buffer[0] == '\n' )
-	{
-		dsccb.base_address = 0x200;
-	}
-	else
-	{
-	    sscanf ( input_buffer, "%hx", &dsccb.base_address );
-	}
-
-	printf ( "Enter the IRQ number (Default %d hit ENTER) : ",5 );
-	fgets ( input_buffer, 20, stdin );
-	if ( input_buffer[0] == '\n' )
-	{
-	    intBuff = 5;
-	}
-	else
-	{
-	    sscanf ( input_buffer, "%d", &intBuff );
-	}
-	dsccb.int_level = (BYTE)intBuff;
-	
-
-	if(dscInitBoard(DSC_ZETA, &dsccb, &dscb)!= DE_NONE)
-	{
-		errorCheck ErrorCheck();
-		return 0;
-	}
-
-    //=========================================================================
-	// III. DIO INPUT AND OUTPUT
-	//
-	//		Perform a set of byte-level inputs and outputs. We start by sending
-	//		an output byte value of 0 to the selected digital I/O port and then
-	//		read from that same port again to verify that the correct value was
-	//		exchanged. For word and bit-level operations, the steps are nearly
-	//		identical with a few minor changes to function names and the size
-	//		of the data to be transferred.
-	//
-	//		NOTE: Remember that the bytes received from port are supposed to be
-	//			  equal to the inversion of the bytes sent. That is, the input
-	//			  bytes are equal to 255 minus the output bytes.
-	//
-	//		Guide:
-	//
-	//		1. Read a Byte from  port 
-	//		2. Read a Byte from all ports
-	//		3. Read all bits from a  port
-	//		4. Write a Byte to port
-	//		5. Write a Bit to a port
-	//		6. Port loopback with 0-255 read/write repetitive\n
-	//		q. Quit Program
-	// 		Choose these options in any order from the menu!
-	//=========================================================================
-
-	printf( "\nDIO INPUT AND OUTPUT: Main Menu \n" );
-	do
-	{
-		intBuff = 0;
-		printf (  "########################################################\n" );
-		printf (  "1) Read a Byte from  port\n" );
-		printf (  "2) Read a Byte from all ports\n" );
-		printf (  "3) Read all bits from a  port\n" );
-		printf (  "4) Write a Byte to port\n" );
-		printf (  "5) Write a Bit to a port\n" );
-		printf (  "6) Port loopback with 0-255 read/write repetitive\n" );
-		printf (  "q) Quit Program \n" );
-		printf (  "########################################################\n" );
-
-		fgets ( input_buffer, 20, stdin );
-        sscanf ( input_buffer, "%d", &intBuff );
-
-        if ( input_buffer[0] == 'q' )
-        {
-            intBuff = 'q';
-        }
-
-			switch ( intBuff )
-		{
-				case READ_BYTE:
-					readByteDIOPort();
-					break;
-
-				case READ_BYTE_FROM_ALL_PORTS:
-	     			readByteAllDIOPorts();
-					break;
-
-				case READ_ALL_BITS:
-					 readAllBitsDIOPort();
-					 break;
-
-				case WRITE_BYTE:
-					   writeByteDIOPort();
-					   break;
-				case WRITE_BIT:
-					  writeBitDIOPort();
-					  break;
-
-				case LOOP_BACK_TEST:
-					DIOPortLoopbackTest();
-					break;
-				
-				case 'q':
-					return 0;
-            		break;
-
-				default: // invalid option selected
-					printf("Please Enter valid option \r\n");
-					break;
-		}
-				
-	} while ( input_buffer[0] != 'q' );
-
-
-	//=========================================================================
-	// IV. CLEANUP
-	//
-	//	   Cleanup any remnants left by the program and free the resources used
-	//	   by the driver.
-	//
-	//     STEPS TO FOLLOW:
-	//
-	//	   1. free the driver resources
-	//=========================================================================
-
-	dscFree ( );
-
-	printf ( "\nDSC Zeta DIOFunctions completed.\n" );
-
-	return 0;
-
-} // end main()
-
+}
 //=============================================================================
 // Name: readByteDIOPort()
 // Desc: Read a port A-D by receiving a byte from the selected port's  register.
 // Parameters:void
 // Return: void
 //=============================================================================
-void readByteDIOPort()
+void byte::readByteDIOPort()
 {
 	BYTE* config = NULL;
 	BYTE enable = 0;
@@ -358,17 +161,14 @@ void readByteDIOPort()
 	return;
 
 }
-
-
 //=============================================================================
 // Name: readByteAllDIOPorts()
 // Desc: Read a BYTE value from all the  ports A-D .
 // Parameters:void
 // Return: void
 //=============================================================================
-void readByteAllDIOPorts()
+void byte::readByteAllDIOPorts()
 {
-
 	BYTE* config = NULL;
 	BYTE enable = 0;
 	BYTE port = 0;
@@ -439,14 +239,13 @@ void readByteAllDIOPorts()
 	return;
 
 }
-
 //=============================================================================
 // Name: readAllBitsDIOPort()
 // Desc: Read all bits  from the selected port's  register.
 // Parameters:void
 // Return: void
 //=============================================================================
-void  readAllBitsDIOPort()
+void byte::readAllBitsDIOPort()
 {
 	BYTE* config = NULL;
 	BYTE enable = 0;
@@ -545,9 +344,7 @@ void  readAllBitsDIOPort()
 	fgets ( input_buffer, 20, stdin );
 	return;
 
-
 }
-
 //=============================================================================
 // Name: writeByteDIOPort()
 // Desc: Program a port A-D by sending a byte to the selected port's
@@ -555,7 +352,7 @@ void  readAllBitsDIOPort()
 // Parameters: void
 // Return: void
 //=============================================================================
-void writeByteDIOPort()
+void byte::writeByteDIOPort()
 {
 	BYTE* config = NULL;
 	int enable = 0;
@@ -630,7 +427,6 @@ void writeByteDIOPort()
 return;
 
 }
-
 //=============================================================================
 // Name: writeBitDIOPort()
 // Desc: Program a port A-D by sending a digital value to the selected
@@ -638,7 +434,7 @@ return;
 // Parameters:void
 // Return: void
 //=============================================================================
-void writeBitDIOPort()
+void byte::writeBitDIOPort()
 {
 	BYTE* config = NULL;
 	int enable = 0;
@@ -713,18 +509,14 @@ void writeBitDIOPort()
 
 return;
 }
-
-
-
 //=============================================================================
 // Name: DIOPortLoopbackTest()
 // Desc: loop back test on various ports
 // Parameters: void
 // Return: void
 //=============================================================================
-void DIOPortLoopbackTest()
+void byte::DIOPortLoopbackTest()
 {
-
 	BYTE* config = NULL;
 	int output_port = 0,input_port = 0;
 	BYTE output_byte = 0,input_byte = 0;
@@ -825,3 +617,197 @@ void DIOPortLoopbackTest()
 	}while(1);
 return;
 }
+
+//=============================================================================
+// Name: main()
+// Desc: Starting function that calls the driver functions used
+//
+//		 NOTE: By convention, you should capture the BYTE return value for each
+//		 driver API call, and check the error code.
+//
+//	     I. Driver Initialization
+//	    II. Board Initialization
+//	   III. DIO INPUT AND OUTPUT
+//	    IV. Cleanup
+//
+//=============================================================================
+
+int main ( void )
+{
+
+	int intBuff = 0; // temp variables of size int
+	int temp = 0;   // temporary storage
+   	char input_buffer[20];
+
+   	memset ( &dsccbp, 0, sizeof(DSCCBP) );
+	memset (portConfig,0, sizeof(int)*DIOPORT_MAX);
+
+  
+	//=========================================================================
+	// I. DRIVER INITIALIZATION
+	//
+	//    Initializes the DSCUD library.
+	//
+	//    STEPS TO FOLLOW:
+	//
+	//	  1. initialize the driver, using the driver version for validation
+	//=========================================================================
+
+	if ( (dscInit ( DSC_VERSION ) != DE_NONE) )
+	{
+		errorCheck ErrorCheck();
+		return 0;
+	}
+		
+	//=========================================================================
+	// II. BOARD INITIALIZATION
+	//
+	//	   Initialize the port_under_testboard. This function passes the various
+	//	   hardware parameters to the driver and resets the hardware.
+	//
+	//     STEPS TO FOLLOW:
+	//
+	//	   1. set the board type to DSC_ZETA for the ZETA board
+	//	   2. intialize and register the board with the driver, after which
+	//		  the struct, dscb, now holds the handle for the board
+	//=========================================================================
+
+    cout<< "\nZeta DIO Function Application\n";
+	 
+	dsccb.boardtype = DSC_ZETA;
+	
+	cout<< "Enter the PC/104 base address (Default 0x200 hit ENTER) : ";
+
+	fgets ( input_buffer, 20, stdin );
+	if ( input_buffer[0] == '\n' )
+	{
+		dsccb.base_address = 0x200;
+	}
+	else
+	{
+	    sscanf ( input_buffer, "%hx", &dsccb.base_address );
+	}
+
+	printf ( "Enter the IRQ number (Default %d hit ENTER) : ",5 );
+	fgets ( input_buffer, 20, stdin );
+	if ( input_buffer[0] == '\n' )
+	{
+	    intBuff = 5;
+	}
+	else
+	{
+	    sscanf ( input_buffer, "%d", &intBuff );
+	}
+	dsccb.int_level = (BYTE)intBuff;
+	
+
+	if(dscInitBoard(DSC_ZETA, &dsccb, &dscb)!= DE_NONE)
+	{
+		errorCheck ErrorCheck();
+		return 0;
+	}
+
+    //=========================================================================
+	// III. DIO INPUT AND OUTPUT
+	//
+	//		Perform a set of byte-level inputs and outputs. We start by sending
+	//		an output byte value of 0 to the selected digital I/O port and then
+	//		read from that same port again to verify that the correct value was
+	//		exchanged. For word and bit-level operations, the steps are nearly
+	//		identical with a few minor changes to function names and the size
+	//		of the data to be transferred.
+	//
+	//		NOTE: Remember that the bytes received from port are supposed to be
+	//			  equal to the inversion of the bytes sent. That is, the input
+	//			  bytes are equal to 255 minus the output bytes.
+	//
+	//		Guide:
+	//
+	//		1. Read a Byte from  port 
+	//		2. Read a Byte from all ports
+	//		3. Read all bits from a  port
+	//		4. Write a Byte to port
+	//		5. Write a Bit to a port
+	//		6. Port loopback with 0-255 read/write repetitive\n
+	//		q. Quit Program
+	// 		Choose these options in any order from the menu!
+	//=========================================================================
+
+	printf( "\nDIO INPUT AND OUTPUT: Main Menu \n" );
+	do
+	{
+		byte byteObject;
+		intBuff = 0;
+		printf (  "########################################################\n" );
+		printf (  "1) Read a Byte from  port\n" );
+		printf (  "2) Read a Byte from all ports\n" );
+		printf (  "3) Read all bits from a  port\n" );
+		printf (  "4) Write a Byte to port\n" );
+		printf (  "5) Write a Bit to a port\n" );
+		printf (  "6) Port loopback with 0-255 read/write repetitive\n" );
+		printf (  "q) Quit Program \n" );
+		printf (  "########################################################\n" );
+
+		fgets ( input_buffer, 20, stdin );
+        sscanf ( input_buffer, "%d", &intBuff );
+
+        if ( input_buffer[0] == 'q' )
+        {
+            intBuff = 'q';
+        }
+
+		switch ( intBuff )
+		{
+				case READ_BYTE:
+					byteObject.readByteDIOPort();
+					break;
+
+				case READ_BYTE_FROM_ALL_PORTS:
+	     			byteObject.readByteAllDIOPorts();
+					break;
+
+				case READ_ALL_BITS:
+					 byteObject.readAllBitsDIOPort();
+					 break;
+
+				case WRITE_BYTE:
+					   byteObject.writeByteDIOPort();
+					   break;
+				case WRITE_BIT:
+					  byteObject.writeBitDIOPort();
+					  break;
+
+				case LOOP_BACK_TEST:
+					byteObject.DIOPortLoopbackTest();
+					break;
+				
+				case 'q':
+					return 0;
+            		break;
+
+				default: // invalid option selected
+					printf("Please Enter valid option \r\n");
+					break;
+		}
+				
+	} while ( input_buffer[0] != 'q' );
+
+
+	//=========================================================================
+	// IV. CLEANUP
+	//
+	//	   Cleanup any remnants left by the program and free the resources used
+	//	   by the driver.
+	//
+	//     STEPS TO FOLLOW:
+	//
+	//	   1. free the driver resources
+	//=========================================================================
+
+	dscFree ( );
+
+	printf ( "\nDSC Zeta DIOFunctions completed.\n" );
+
+	return 0;
+
+} // end main()
