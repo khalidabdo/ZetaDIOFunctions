@@ -52,12 +52,9 @@ constexpr uint8_t DIOPORT_C {2};
 constexpr uint8_t DIOPORT_D {3};
 
 
-constexpr uint8_t  READ_BYTE				           {1};
-constexpr uint8_t  READ_BYTE_FROM_ALL_PORTS	   	   	   {2};
-constexpr uint8_t  READ_ALL_BITS				       {3};
-constexpr uint8_t  WRITE_BYTE				           {4};
-constexpr uint8_t  WRITE_BIT				           {5};
-constexpr uint8_t  LOOP_BACK_TEST				       {6};
+constexpr uint8_t  READ_BIT				           {1};
+constexpr uint8_t  WRITE_BIT         	   	   	   {2};
+constexpr uint8_t  LOOP_BACK_TEST				   {3};
 
 
 // var declarations
@@ -70,10 +67,7 @@ class byte
 {
 	public:
 		byte();
-		void readByteDIOPort();
-		void readByteAllDIOPorts();
-		void readAllBitsDIOPort();
-		void writeByteDIOPort();
+		void readBitsDIOPort();
 		void writeBitDIOPort();
 		void DIOPortLoopbackTest();
 		Parser mParser;
@@ -84,160 +78,14 @@ class byte
 byte::byte()
 {
 }
-//=============================================================================
-// Name: readByteDIOPort()
-// Desc: Read a port A-D by receiving a byte from the selected port's  register.
-// Parameters:void
-// Return: void
-//=============================================================================
-void byte::readByteDIOPort()
-{
-	BYTE* config = NULL;
-	BYTE enable = 0;
-	BYTE port = 0;
-	BYTE Dir = 0;
-	BYTE input_byte = 0; 
-	
-	config = (BYTE*)malloc(sizeof(BYTE)*3);
 
-	config[0] = port;
-	config[1] = enable;
-	config[2] = Dir;
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	port = 1;
-	config[0] = port;
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	port = 2;
-	config[0] = port;
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	port = 3;
-	config[0] = port;
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	printf ("Enter port number (0-3):");
-	fgets ( input_buffer, 20, stdin );
-   	sscanf ( input_buffer, "%d", &port );
-
-	printf("\nPress ENTER key to stop reading ...\r\n");
-	
-
-	do
-	{
-
-		if( (dscDIOInputByte ( dscb, port, &input_byte ) != DE_NONE) )
-		{
-			errorCheck errorChecker();
-		}
-
-		dscSleep( 1000 );
-
-		printf("Byte value received from port %d = 0x%x\r\n", port, input_byte);
-
-	}
-	
-	while ( !( kbhit() ) );
-	fgets ( input_buffer, 20, stdin );
-	return;
-
-}
-//=============================================================================
-// Name: readByteAllDIOPorts()
-// Desc: Read a BYTE value from all the  ports A-D .
-// Parameters:void
-// Return: void
-//=============================================================================
-void byte::readByteAllDIOPorts()
-{
-	BYTE* config = NULL;
-	BYTE enable = 0;
-	BYTE port = 0;
-	BYTE Dir = 0;
-	BYTE input_byte = 0; 
-	
-	config = (BYTE*)malloc(sizeof(BYTE)*3);
-
-	config[0] = port;
-	config[1] = enable;
-	config[2] = Dir;
-
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	port = 1;
-	config[0] = port;
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	port = 2;
-	config[0] = port;
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	port = 3;
-	config[0] = port;
-
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck errorChecker();
-	}
-
-	printf("\nPress ENTER key to stop reading ...\r\n");
-	
-	do
-	{
-		printf("Port:\t0\t1\t2\t3\n");
-		printf("Value:\t");
-		for(port = 0;port <4; port++)
-		{
-			if( (dscDIOInputByte ( dscb, port, &input_byte ) != DE_NONE) )
-			{
-				errorCheck errorChecker();
-			}
-			printf("0x%X\t",input_byte);
-
-		}
-		dscSleep(1000);
-		printf("\n\n");
-
-	}while ( !( kbhit() ) );
-	fgets ( input_buffer, 20, stdin );
-	return;
-}
 //=============================================================================
 // Name: readAllBitsDIOPort()
 // Desc: Read all bits  from the selected port's  register.
 // Parameters:void
 // Return: void
 //=============================================================================
-void byte::readAllBitsDIOPort()
+void byte::readBitsDIOPort()
 {
 	BYTE* config = NULL;
 	BYTE enable = 0;
@@ -325,88 +173,7 @@ void byte::readAllBitsDIOPort()
 
 	return;
 }
-//=============================================================================
-// Name: writeByteDIOPort()
-// Desc: Program a port A-D by sending a byte to the selected port's
-//	  register.
-// Parameters: void
-// Return: void
-//=============================================================================
-void byte::writeByteDIOPort()
-{
-	BYTE* config = NULL;
-	int enable = 0;
-	int Dir = 1;
-	BYTE output_byte = 0;
-	int intBuff;
-	int port = 0;
 
-	config = (BYTE*)malloc(sizeof(BYTE)*3);
-
-	printf ("Enter port number (0-3):");
-	fgets ( input_buffer, 20, stdin );
-   	sscanf ( input_buffer, "%d", &port );
-	
-	if( (port == 0) || (port == 1) )
-	{
-		printf("Do u want enable/diable the Port (0-Enable 1-Disable):");
-		fgets(input_buffer, 20, stdin);
-		sscanf(input_buffer,"%d", &enable);
-	}
-	
-	if((port==0) || (port==1))
-	{
-		Dir = 1;
-	}
-	else if(port==2)
-	{
-		Dir = 0xFF;
-	}
-	else
-	{
-		Dir = 7;
-	}
-
-	config[0] = port;
-	config[1] = enable;
-	config[2] = Dir;
-	
-	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
-	{
-		errorCheck ErrorCheck();
-		return ;
-	}
-	//HelixRead(0x29,&output_byte);
-	//printf("value@0x29 = 0x%X\n",output_byte);
-	do
-	{
-		if(port==3)
-			printf("Enter value 0-7 or q to quit:");
-		else
-			printf("Enter value 0-255 or q to quit:");
-		fgets ( input_buffer, 20, stdin );
-		sscanf ( input_buffer, "%d", &intBuff );
-		
-		if ( input_buffer[0] == 'q' )
-		{
-			intBuff = 'q';
-		}
-		else
-		{
-			output_byte = (BYTE)intBuff;
-			
-			if ( (dscDIOOutputByte(dscb,port,output_byte) != DE_NONE) )
-			{
-				errorCheck ErrorCheck();
-				return;
-			}
-			printf("The Byte value  %d is sent to port %d \n",output_byte,port);
-		}
-	}while ( input_buffer[0] != 'q' );
-
-return;
-
-}
 //=============================================================================
 // Name: writeBitDIOPort()
 // Desc: Program a port A-D by sending a digital value to the selected
@@ -699,15 +466,12 @@ int main ( void )
 	{
 		byte byteObject{};
 		intBuff = 0;
-		printf (  "########################################################\n" );
-		printf (  "1) Read a Byte from  port\n" );
-		printf (  "2) Read a Byte from all ports\n" );
-		printf (  "3) Read all bits from a  port\n" );
-		printf (  "4) Write a Byte to port\n" );
-		printf (  "5) Write a Bit to a port\n" );
-		printf (  "6) Port loopback with 0-255 read/write repetitive\n" );
-		printf (  "q) Quit Program \n" );
-		printf (  "########################################################\n" );
+		cout << "#################################################\n";
+		cout << "1) Read a Bit from  port\n";
+		cout << "2) Write a Bit to a port\n";
+		cout << "3) Port loopback with 0-255 read/write repetitive\n";
+		cout << "q) Quit Program \n";
+		cout << "#################################################\n";
 
 		fgets ( input_buffer, 20, stdin );
         sscanf ( input_buffer, "%d", &intBuff );
@@ -719,21 +483,10 @@ int main ( void )
 
 		switch ( intBuff )
 		{
-				case READ_BYTE:
-					byteObject.readByteDIOPort();
-					break;
-
-				case READ_BYTE_FROM_ALL_PORTS:
-	     			byteObject.readByteAllDIOPorts();
-					break;
-
-				case READ_ALL_BITS:
-					 byteObject.readAllBitsDIOPort();
+				case READ_BIT:
+					 byteObject.readBitsDIOPort();
 					 break;
 
-				case WRITE_BYTE:
-					   byteObject.writeByteDIOPort();
-					   break;
 				case WRITE_BIT:
 					  byteObject.writeBitDIOPort();
 					  break;
