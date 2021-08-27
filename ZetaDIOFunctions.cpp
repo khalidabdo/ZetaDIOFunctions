@@ -19,10 +19,30 @@
 // Desc: Writes and reads from Digital I/O port
 //============================================================================
 #include <iostream>
+#include <string>
+#include <regex>
+#include <sstream>
+
+#include "Parser.hpp"
+
 #include "DSCUD_demo_def.h"
 #include "Zeta.h"
 
 using namespace std;
+
+class errorCheck
+{
+	private:
+		// globals
+		ERRPARAMS errorParams; // structure for returning error code and error string
+	public:
+		errorCheck()
+		{
+			dscGetLastError ( &errorParams );
+			printf ( "dscInit error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
+			cout<< "dscInit error: "<< dscGetErrorString ( errorParams.ErrCode ) << errorParams.errstring << endl;
+		}
+};
 
 constexpr uint8_t DIOPORT_MAX {4};
 //DIO Port No
@@ -30,7 +50,6 @@ constexpr uint8_t DIOPORT_A {0};
 constexpr uint8_t DIOPORT_B {1};
 constexpr uint8_t DIOPORT_C {2};
 constexpr uint8_t DIOPORT_D {3};
-
 
 
 constexpr uint8_t  READ_BYTE				           {1};
@@ -47,21 +66,6 @@ DSCCBP dsccbp; // structure containing board settings
 int portConfig[4];//used to store the port directions
 DSCCB dsccb;
 
-
-class errorCheck
-{
-	private:
-		// globals
-		ERRPARAMS errorParams; // structure for returning error code and error string
-	public:
-		errorCheck()
-		{
-			dscGetLastError ( &errorParams );
-			printf ( "dscInit error: %s %s\n", dscGetErrorString ( errorParams.ErrCode ), errorParams.errstring );
-			cout<< "dscInit error: "<< dscGetErrorString ( errorParams.ErrCode ) << errorParams.errstring << endl;
-		}
-};
-
 class byte
 {
 	public:
@@ -72,14 +76,13 @@ class byte
 		void writeByteDIOPort();
 		void writeBitDIOPort();
 		void DIOPortLoopbackTest();
+		Parser mParser;
 	private:
 		//new variables
 		char input_buffer[20];
-
 };
 byte::byte()
 {
-
 }
 //=============================================================================
 // Name: readByteDIOPort()
@@ -103,8 +106,7 @@ void byte::readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 1;
@@ -112,8 +114,7 @@ void byte::readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 2;
@@ -121,8 +122,7 @@ void byte::readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 3;
@@ -130,8 +130,7 @@ void byte::readByteDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	printf ("Enter port number (0-3):");
@@ -146,8 +145,7 @@ void byte::readByteDIOPort()
 
 		if( (dscDIOInputByte ( dscb, port, &input_byte ) != DE_NONE) )
 		{
-			errorCheck ErrorCheck();
-			return;
+			errorCheck errorChecker();
 		}
 
 		dscSleep( 1000 );
@@ -184,8 +182,7 @@ void byte::readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 1;
@@ -193,8 +190,7 @@ void byte::readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 2;
@@ -202,8 +198,7 @@ void byte::readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 3;
@@ -211,8 +206,7 @@ void byte::readByteAllDIOPorts()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	printf("\nPress ENTER key to stop reading ...\r\n");
@@ -225,8 +219,7 @@ void byte::readByteAllDIOPorts()
 		{
 			if( (dscDIOInputByte ( dscb, port, &input_byte ) != DE_NONE) )
 			{
-				errorCheck ErrorCheck();
-				return;
+				errorCheck errorChecker();
 			}
 			printf("0x%X\t",input_byte);
 
@@ -237,7 +230,6 @@ void byte::readByteAllDIOPorts()
 	}while ( !( kbhit() ) );
 	fgets ( input_buffer, 20, stdin );
 	return;
-
 }
 //=============================================================================
 // Name: readAllBitsDIOPort()
@@ -264,8 +256,7 @@ void byte::readAllBitsDIOPort()
 	
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();	
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 1;
@@ -273,8 +264,7 @@ void byte::readAllBitsDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 2;
@@ -282,8 +272,7 @@ void byte::readAllBitsDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	port = 3;
@@ -291,8 +280,7 @@ void byte::readAllBitsDIOPort()
 
 	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
 	{
-		errorCheck ErrorCheck();
-		return ;
+		errorCheck errorChecker();
 	}
 
 	printf ("Enter port number (0-3):");
@@ -329,8 +317,7 @@ void byte::readAllBitsDIOPort()
 
 			if ( (dscDIOInputBit ( dscb, port, bit, &input_byte ) != DE_NONE) )
 			{
-				errorCheck ErrorCheck();
-				return;
+				errorCheck errorChecker();
 			}
 
 		printf("\t%x",input_byte);
@@ -343,7 +330,6 @@ void byte::readAllBitsDIOPort()
 	}while ( !( kbhit() ) );
 	fgets ( input_buffer, 20, stdin );
 	return;
-
 }
 //=============================================================================
 // Name: writeByteDIOPort()
@@ -736,7 +722,7 @@ int main ( void )
 	printf( "\nDIO INPUT AND OUTPUT: Main Menu \n" );
 	do
 	{
-		byte byteObject;
+		byte byteObject{};
 		intBuff = 0;
 		printf (  "########################################################\n" );
 		printf (  "1) Read a Byte from  port\n" );
@@ -791,7 +777,6 @@ int main ( void )
 		}
 				
 	} while ( input_buffer[0] != 'q' );
-
 
 	//=========================================================================
 	// IV. CLEANUP
