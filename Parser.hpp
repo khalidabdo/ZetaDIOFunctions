@@ -1,9 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <string>
 #include <regex>
-#include <sstream>
 
 using namespace std;
 
@@ -17,9 +15,7 @@ enum class parsingState
 class Parser
 {
 	public:
-		Parser():mPort{0},mBit{0},mValue{0}
-		{	
-		}
+		Parser();
 		void getInputString();
 		uint8_t getPort();
 		uint8_t getBit();

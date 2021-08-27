@@ -245,7 +245,6 @@ void byte::readAllBitsDIOPort()
 	BYTE Dir = 0;
 	BYTE input_byte = 0;
 	BYTE bit = 0;
-	int intBuff;
 
 	config = (BYTE*)malloc(sizeof(BYTE)*3);
 
@@ -283,52 +282,47 @@ void byte::readAllBitsDIOPort()
 		errorCheck errorChecker();
 	}
 
-	printf ("Enter port number (0-3):");
-	fgets ( input_buffer, 20, stdin );
-    sscanf ( input_buffer, "%d", &port );
-	
-	printf("\nPress ENTER key to stop reading ...\r\n");
+	Parser inputParser;
+	inputParser.getInputString();
+	inputParser.parsInput();
+	cout << "port number is: " << inputParser.getPort() << endl;
+	uint8_t localport = inputParser.getPort();
+	uint8_t localBitNumber = inputParser.getBit();
 
 	do
 	{
-		printf("The port %d each bit values are \n",port);
-		printf("--------------------------------------------------------------------\r\n");
-		printf("BitNo:\t7\t6\t5\t4\t3\t2\t1\t0\r\n");
-		printf("--------------------------------------------------------------------\r\n");
-		printf("Value:");
+		cout << "The port " <<  localport << endl;
+		cout << "--------------------------------------------------------------------\r\n";
+		cout << "BitNo: " << localBitNumber << endl;
+		cout << "--------------------------------------------------------------------\r\n";
+		cout << "Value:";
 		
-		for(intBuff=7 ;intBuff>=0;intBuff--)
+
+		if(localport == 0 || localport == 1 || localport == 2)
 		{
-			if(port == 0 || port == 1 || port == 2)
+			//bit = (BYTE) localBitNumber;
+		}
+		else if(localport == 3)
+		{
+			if(localBitNumber >=3)
 			{
-				bit = (BYTE) intBuff;
+				continue;
 			}
-			else if(port == 3)
-			{
-				if(intBuff >=3)
-				{
-					printf("\t0");
-					continue;
-				}
-				//bit = (BYTE) intBuff - 5;
-				bit = (BYTE) intBuff;
-				
-			}
-
-			if ( (dscDIOInputBit ( dscb, port, bit, &input_byte ) != DE_NONE) )
-			{
-				errorCheck errorChecker();
-			}
-
-		printf("\t%x",input_byte);
-		
+			//bit = (BYTE) intBuff - 5;
+			//bit = (BYTE) localBitNumber;
 		}
 
-		printf("\n");
+		if ( (dscDIOInputBit ( dscb, localport, localBitNumber, &input_byte ) != DE_NONE) )
+		{
+			errorCheck errorChecker();
+		}
+
+		cout << "\t" << (input_byte & (1<<localBitNumber)) << endl;
+		
 		dscSleep(1000);
 
-	}while ( !( kbhit() ) );
-	fgets ( input_buffer, 20, stdin );
+	}while (false);
+
 	return;
 }
 //=============================================================================
@@ -424,30 +418,23 @@ void byte::writeBitDIOPort()
 {
 	BYTE* config = NULL;
 	int enable = 0;
-	int port = 0;
 	int Dir = 1;
-	BYTE output_byte = 0;
-	int intBuf;
-	BYTE bit = 0;
 	
 	
-	printf ("Enter port number (0-3):");
-	fgets ( input_buffer, 20, stdin );
-   	sscanf ( input_buffer, "%d", &port );
-	
-	if(port==0 || port==1)
-	{
-		printf("Do u want to enable/diable the port (0-1):0-Enable 1-Disable:");
-		fgets(input_buffer,20,stdin);
-		sscanf(input_buffer,"%d",&enable);
-	}
-	
+	Parser inputParser;
+	inputParser.getInputString();
+	inputParser.parsInput();
 
-	if(port == 0 || port == 1)
+	uint8_t localport = inputParser.getPort();
+	uint8_t localBitNumber = inputParser.getBit();
+	uint8_t localBitValue = inputParser.getValue();
+	
+	if(localport==0 || localport==1)
 	{
+		enable = 0;
 		Dir = 1;
 	}
-	else if(port == 2)
+	else if(localport == 2)
 	{
 		Dir = 0xFF;
 	}
@@ -458,7 +445,7 @@ void byte::writeBitDIOPort()
 
 	config = (BYTE*)malloc(sizeof(BYTE)*3);
 
-	config[0] = port;
+	config[0] = localport;
 	config[1] = enable;
 	config[2] = Dir;
 
@@ -469,29 +456,17 @@ void byte::writeBitDIOPort()
 	}
 	do
 	{
-		if(port == 3)
-			printf ("Enter Bit (0-2):or q to quit :");
+		if(localport == 3)
+			cout<< "Enter Bit (0-2):or q to quit :";
 		else
-			printf ("Enter Bit (0-7):or q to quit :");
-		fgets ( input_buffer, 20, stdin );
-		sscanf ( input_buffer, "%d", &intBuf );
-		bit = intBuf;
-		
-		if(input_buffer[0] != 'q')
+			cout<< "Enter Bit (0-7):or q to quit :";
+
+		if ( (dscDIOOutputBit(dscb,localport,localBitNumber,localBitValue) != DE_NONE) )
 		{
-			printf ("Enter Bit value (0-1):");
-			fgets ( input_buffer, 20, stdin );
-			sscanf ( input_buffer, "%d", &intBuf );
-			output_byte = intBuf;
-
-
-			if ( (dscDIOOutputBit(dscb,port,bit,output_byte) != DE_NONE) )
-			{
-				errorCheck ErrorCheck();
-				return;
-			}
+			errorCheck ErrorCheck();
+			return;
 		}
-	}while( input_buffer[0] != 'q' );
+	}while(false);
 
 return;
 }
