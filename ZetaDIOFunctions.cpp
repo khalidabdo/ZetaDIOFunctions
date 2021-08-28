@@ -132,7 +132,11 @@ void byte::readBitsDIOPort()
 
 	Parser inputParser;
 	inputParser.getInputString();
-	inputParser.parsInput();
+	parsingState parsingState = inputParser.parsInput();
+	if(parsingState == parsingState::INVALID)
+	{
+		cout << "Please Enter correct input format set/read[port x,bit x,bit_value x]" << endl;
+	}
 	cout << "port number is: " << inputParser.getPort() << endl;
 	uint8_t localport = inputParser.getPort();
 	uint8_t localBitNumber = inputParser.getBit();
@@ -190,8 +194,11 @@ void byte::writeBitDIOPort()
 	
 	Parser inputParser;
 	inputParser.getInputString();
-	inputParser.parsInput();
-
+	parsingState parsingState = inputParser.parsInput();
+	if(parsingState == parsingState::INVALID)
+	{
+		cout << "Please Enter correct input format set/read[port x,bit x,bit_value x]" << endl;
+	}
 	uint8_t localport = inputParser.getPort();
 	uint8_t localBitNumber = inputParser.getBit();
 	uint8_t localBitValue = inputParser.getValue();
