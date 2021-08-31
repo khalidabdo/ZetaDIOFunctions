@@ -31,16 +31,12 @@ parsingState Parser::parsInput()
 	if(regex_match(mInput,setRegexRule))
 	{
 		string stringPort = mInput.substr(9,9);
-		string stringBit = mInput.substr(14,14);
+		string stringBit = mInput.substr(15,15);
 		string stringBitValue = mInput.substr(27,27);
 
-		stringstream port(stringPort);
-		stringstream bit(stringBit);
-		stringstream bitValue(stringBitValue);
-
-		port >> mPort;
-		bit >> mBit;
-		bitValue >> mValue;
+		mPort = stoi(stringPort);
+		mBit = stoi(stringBit);
+		mValue = stoi(stringBitValue);
 
 		return parsingState::SET;
 	}
@@ -48,16 +44,12 @@ parsingState Parser::parsInput()
 	if(regex_match(mInput,readRegexRule))
 	{
 		string stringPort = mInput.substr(10,10);
-		string stringBit = mInput.substr(15,15);
+		string stringBit = mInput.substr(16,16);
 		string stringBitValue = mInput.substr(28,28);
 
-		stringstream port(stringPort);
-		stringstream bit(stringBit);
-		stringstream bitValue(stringBitValue);
-
-		port >> mPort;
-		bit >> mBit;
-		bitValue >> mValue;
+		mPort = stoi(stringPort);
+		mBit = stoi(stringBit);
+		mValue = stoi(stringBitValue);
 
 		return parsingState::READ;
 	}
