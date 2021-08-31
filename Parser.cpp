@@ -40,7 +40,60 @@ parsingState Parser::parsInput()
 
 		return parsingState::SET;
 	}
-	regex readRegexRule("(read)\\[port\\s[0-7],bit\\s[0-7]]");
+
+	regex setXEnableRegexRule("(set)\\[x,enable\\]");
+	if(regex_match(mInput,setXEnableRegexRule))
+	{
+		mPort = 0;
+		mBit = 0;
+		return parsingState::ENABLE;
+	}
+
+	regex setYEnableRegexRule("(set)\\[y,enable\\]");
+	if(regex_match(mInput,setYEnableRegexRule))
+	{
+		mPort = 0;
+		mBit = 1;
+		return parsingState::ENABLE;
+	}
+
+	regex setXDisableRegexRule("(set)\\[x,disable\\]");
+	if(regex_match(mInput,setXDisableRegexRule))
+	{
+		mPort = 0;
+		mBit = 1;
+		return parsingState::DISABLE;
+	}
+
+	regex setYDisableRegexRule("(set)\\[y,disable\\]");
+	if(regex_match(mInput,setYDisableRegexRule))
+	{
+		mPort = 0;
+		mBit = 1;
+		return parsingState::DISABLE;
+	}
+
+	regex readX("(read)\\[x\\]");
+	if(regex_match(mInput,readX))
+	{
+		mPort = 0;
+		mBit = 0;
+		mValue = 0;
+
+		return parsingState::READ;
+	}
+
+	regex readY("(read)\\[y\\]");
+	if(regex_match(mInput,readY))
+	{
+		mPort = 0;
+		mBit = 1;
+		mValue = 0;
+
+		return parsingState::READ;
+	}
+
+	regex readRegexRule("(read)\\[port\\s[0-7],bit\\s[0-7]\\]");
 	if(regex_match(mInput,readRegexRule))
 	{
 		string stringPort = mInput.substr(10,10);

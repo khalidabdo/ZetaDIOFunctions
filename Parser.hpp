@@ -10,6 +10,8 @@ enum class parsingState
 	SET,
 	READ,
 	INVALID,
+	ENABLE,
+	DISABLE,
 	QUITE
 };
 

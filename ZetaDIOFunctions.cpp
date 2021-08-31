@@ -70,6 +70,8 @@ class byte
 		uint8_t readBitsDIOPort(uint8_t localport,uint8_t localBitNumber);
 		void writeBitDIOPort(uint8_t localport,uint8_t localBitNumber,uint8_t localBitValue);
 		void DIOPortLoopbackTest();
+		void enable(uint8_t localport,uint8_t localBitNumber);
+		void disable(uint8_t localport,uint8_t localBitNumber);
 		Parser mParser;
 	private:
 		//new variables
@@ -204,6 +206,88 @@ void byte::writeBitDIOPort(uint8_t localport,uint8_t localBitNumber,uint8_t loca
 	{
 		errorCheck ErrorCheck();
 		return;
+	}
+}
+//=============================================================================
+// Name: enable()
+// Desc: Program a port A-D by sending a digital value to the selected
+// 	  port's bit register.
+// Parameters:void
+// Return: void
+//=============================================================================
+void byte::enable(uint8_t localport,uint8_t localBitNumber)
+{
+	BYTE* config = NULL;
+	int enable = 0;
+	int Dir = 1;
+	
+
+	if(localport==0)
+	{
+		enable = 0;
+		Dir = 1;
+	}
+
+	config = (BYTE*)malloc(sizeof(BYTE)*3);
+
+	config[0] = localport;
+	config[1] = enable;
+	config[2] = Dir;
+
+	if(localBitNumber == 0)
+	{
+		cout << "X enabled: \n";
+	}
+	else
+	{
+		cout << "Y enabled: \n";
+	}
+
+	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
+	{
+		errorCheck ErrorCheck();
+		return ;
+	}
+}
+//=============================================================================
+// Name: disable()
+// Desc: Program a port A-D by sending a digital value to the selected
+// 	  port's bit register.
+// Parameters:void
+// Return: void
+//=============================================================================
+void byte::disable(uint8_t localport,uint8_t localBitNumber)
+{
+	BYTE* config = NULL;
+	int enable = 1;
+	int Dir = 1;
+	
+
+	if(localport==0)
+	{
+		enable = 1;
+		Dir = 1;
+	}
+
+	config = (BYTE*)malloc(sizeof(BYTE)*3);
+
+	config[0] = localport;
+	config[1] = enable;
+	config[2] = Dir;
+
+	if(localBitNumber == 0)
+	{
+		cout << "X disabled: \n";
+	}
+	else
+	{
+		cout << "Y disabled: \n";
+	}
+	
+	if(dscDIOSetConfig(dscb,config)!= DE_NONE)
+	{
+		errorCheck ErrorCheck();
+		return ;
 	}
 }
 //=============================================================================
@@ -436,13 +520,13 @@ int main ( void )
 	do
 	{
 		byteObject.mParser.getInputString();
-		parsingState parsingState = byteObject.mParser.parsInput();
+		parsingState ParsingState = byteObject.mParser.parsInput();
 		
 		uint8_t port = byteObject.mParser.getPort();
 		uint8_t bit = byteObject.mParser.getBit();
 		uint8_t bitValue = byteObject.mParser.getValue();
 
-		switch(parsingState)
+		switch(ParsingState)
 		{
 			case parsingState::SET:
 				byteObject.writeBitDIOPort(port,bit,bitValue);
@@ -450,6 +534,14 @@ int main ( void )
 
 			case parsingState::READ:
 				cout << "Bit Value: " << (byteObject.readBitsDIOPort(port,bit) & (1<<bit)) << endl;
+			break;
+			
+			case parsingState::ENABLE:
+				byteObject.enable(port,bit);
+			break;
+
+			case parsingState::DISABLE:
+				byteObject.disable(port,bit);
 			break;
 
 			case parsingState::INVALID:
