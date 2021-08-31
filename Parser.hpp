@@ -9,7 +9,8 @@ enum class parsingState
 {
 	SET,
 	READ,
-	INVALID
+	INVALID,
+	QUITE
 };
 
 class Parser

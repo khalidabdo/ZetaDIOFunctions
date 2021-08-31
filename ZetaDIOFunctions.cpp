@@ -67,8 +67,8 @@ class byte
 {
 	public:
 		byte();
-		void readBitsDIOPort();
-		void writeBitDIOPort();
+		uint8_t readBitsDIOPort(uint8_t localport,uint8_t localBitNumber);
+		void writeBitDIOPort(uint8_t localport,uint8_t localBitNumber,uint8_t localBitValue);
 		void DIOPortLoopbackTest();
 		Parser mParser;
 	private:
@@ -85,7 +85,7 @@ byte::byte()
 // Parameters:void
 // Return: void
 //=============================================================================
-void byte::readBitsDIOPort()
+uint8_t byte::readBitsDIOPort(uint8_t localport,uint8_t localBitNumber)
 {
 	BYTE* config = NULL;
 	BYTE enable = 0;
@@ -130,49 +130,29 @@ void byte::readBitsDIOPort()
 		errorCheck errorChecker();
 	}
 
-	Parser inputParser;
-	inputParser.getInputString();
-	parsingState parsingState = inputParser.parsInput();
-
-	if(parsingState == parsingState::INVALID)
+	
+	if(localport == 0 || localport == 1 || localport == 2)
 	{
-		cout << "Please Enter correct input format set/read[port x,bit x,bit_value x]" << endl;
-		return;
+		//bit = (BYTE) localBitNumber;
 	}
-	uint8_t localport = inputParser.getPort();
-	uint8_t localBitNumber = inputParser.getBit();
-
-	do
+	else if(localport == 3)
 	{
-		cout << "Value:";
-		
-
-		if(localport == 0 || localport == 1 || localport == 2)
+		if(localBitNumber >=3)
 		{
-			//bit = (BYTE) localBitNumber;
+			cout << "Bit number shall be less than 3! \n";
 		}
-		else if(localport == 3)
-		{
-			if(localBitNumber >=3)
-			{
-				continue;
-			}
-			//bit = (BYTE) intBuff - 5;
-			//bit = (BYTE) localBitNumber;
-		}
+		//bit = (BYTE) intBuff - 5;
+		//bit = (BYTE) localBitNumber;
+	}
 
-		if ( (dscDIOInputBit ( dscb, localport, localBitNumber, &input_byte ) != DE_NONE) )
-		{
-			errorCheck errorChecker();
-		}
+	if ( (dscDIOInputBit ( dscb, localport, localBitNumber, &input_byte ) != DE_NONE) )
+	{
+		errorCheck errorChecker();
+	}
 
-		cout << "\t" << (input_byte & (1<<localBitNumber)) << endl;
-		
-		dscSleep(1000);
+	dscSleep(1000);
 
-	}while (false);
-
-	return;
+	return input_byte;
 }
 
 //=============================================================================
@@ -182,24 +162,12 @@ void byte::readBitsDIOPort()
 // Parameters:void
 // Return: void
 //=============================================================================
-void byte::writeBitDIOPort()
+void byte::writeBitDIOPort(uint8_t localport,uint8_t localBitNumber,uint8_t localBitValue)
 {
 	BYTE* config = NULL;
 	int enable = 0;
 	int Dir = 1;
 	
-	
-	Parser inputParser;
-	inputParser.getInputString();
-	parsingState parsingState = inputParser.parsInput();
-	if(parsingState == parsingState::INVALID)
-	{
-		cout << "Please Enter correct input format set/read[port x,bit x,bit_value x]" << endl;
-		return;
-	}
-	uint8_t localport = inputParser.getPort();
-	uint8_t localBitNumber = inputParser.getBit();
-	uint8_t localBitValue = inputParser.getValue();
 
 	if(localport==0 || localport==1)
 	{
@@ -226,21 +194,17 @@ void byte::writeBitDIOPort()
 		errorCheck ErrorCheck();
 		return ;
 	}
-	do
+
+	if(localport == 3)
+		cout<< "Enter Bit (0-2):or q to quit :";
+	else
+		cout<< "Enter Bit (0-7):or q to quit :";
+
+	if ( (dscDIOOutputBit(dscb,localport,localBitNumber,localBitValue) != DE_NONE) )
 	{
-		if(localport == 3)
-			cout<< "Enter Bit (0-2):or q to quit :";
-		else
-			cout<< "Enter Bit (0-7):or q to quit :";
-
-		if ( (dscDIOOutputBit(dscb,localport,localBitNumber,localBitValue) != DE_NONE) )
-		{
-			errorCheck ErrorCheck();
-			return;
-		}
-	}while(false);
-
-return;
+		errorCheck ErrorCheck();
+		return;
+	}
 }
 //=============================================================================
 // Name: DIOPortLoopbackTest()
@@ -372,6 +336,8 @@ int main ( void )
 	int temp = 0;   // temporary storage
    	char input_buffer[20];
 
+	byte byteObject{};
+
    	memset ( &dsccbp, 0, sizeof(DSCCBP) );
 	memset (portConfig,0, sizeof(int)*DIOPORT_MAX);
 
@@ -466,49 +432,35 @@ int main ( void )
 	// 		Choose these options in any order from the menu!
 	//=========================================================================
 
-	printf( "\nDIO INPUT AND OUTPUT: Main Menu \n" );
+	cout << "\nEnter Valid Input String\n";
 	do
 	{
-		byte byteObject{};
-		intBuff = 0;
-		cout << "#################################################\n";
-		cout << "1) Read a Bit from  port\n";
-		cout << "2) Write a Bit to a port\n";
-		cout << "3) Port loopback with 0-255 read/write repetitive\n";
-		cout << "q) Quit Program \n";
-		cout << "#################################################\n";
+		byteObject.mParser.getInputString();
+		parsingState parsingState = byteObject.mParser.parsInput();
+		
+		uint8_t port = byteObject.mParser.getPort();
+		uint8_t bit = byteObject.mParser.getBit();
+		uint8_t bitValue = byteObject.mParser.getValue();
 
-		fgets ( input_buffer, 20, stdin );
-        sscanf ( input_buffer, "%d", &intBuff );
-
-        if ( input_buffer[0] == 'q' )
-        {
-            intBuff = 'q';
-        }
-
-		switch ( intBuff )
+		switch(parsingState)
 		{
-				case READ_BIT:
-					 byteObject.readBitsDIOPort();
-					 break;
+			case parsingState::SET:
+				byteObject.writeBitDIOPort(port,bit,bitValue);
+			break;
 
-				case WRITE_BIT:
-					  byteObject.writeBitDIOPort();
-					  break;
+			case parsingState::READ:
+				cout << "Bit Value: " << (byteObject.readBitsDIOPort(port,bit) & (1<<bit)) << endl;
+			break;
 
-				case LOOP_BACK_TEST:
-					byteObject.DIOPortLoopbackTest();
-					break;
-				
-				case 'q':
-					return 0;
-            		break;
+			case parsingState::INVALID:
+				cout << "Please Enter correct input format set/read[port x,bit x,bit_value x]" << endl;
+			break;
 
-				default: // invalid option selected
-					printf("Please Enter valid option \r\n");
-					break;
+			case parsingState::QUITE:
+				input_buffer[0] = 'q';
+			break;
 		}
-				
+
 	} while ( input_buffer[0] != 'q' );
 
 	//=========================================================================
